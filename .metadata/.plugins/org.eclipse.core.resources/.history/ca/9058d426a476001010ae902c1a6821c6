@@ -1,0 +1,121 @@
+package mypack;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Scanner;
+
+public class Authentication {
+
+	public static void main(String[] args) throws Exception {
+		// TODO Auto-generated method stub
+		
+		
+		Authentication auth=new Authentication();
+		auth.signUp();
+//		auth.login();
+
+	}
+	
+	
+//	sign up
+	
+	public void signUp() throws Exception {
+		
+		System.out.println("You are now into SIGN UP operation");
+		
+		String username,email,password,role;
+		
+		System.out.println("Enter Username");
+		username=s.nextLine();
+		
+		System.out.println("Enter Email");
+		email=s.nextLine();
+		
+		System.out.println("Enter Password");
+		password=s.nextLine();
+		
+		System.out.println("Enter role");
+		role=s.nextLine();
+		
+		
+		
+		String q="call sign_up('"+username+"','"+password+"','"+email+"','"+role+"')";
+		
+		PreparedStatement psmt=conn.prepareStatement(q);
+		
+		ResultSet rs=psmt.executeQuery();
+		
+		if(rs.next()) {
+			System.out.println(rs.getString("msg"));
+		}
+		
+		
+		
+	}
+	
+	public void login() throws Exception {
+		
+		System.out.println("how do you want to login press 1 for username or with email any number");
+		int op=s.nextInt();
+		s.nextLine();
+		String username;
+		String password;
+		
+		
+		if(op==1) {
+			System.out.println("Enter USername");
+			 username=s.nextLine();
+			
+			System.out.println("Enter Password");
+			 password=s.nextLine();
+			 
+
+		}else {
+			System.out.println("Enter Email");
+			username=s.nextLine();
+			
+			System.out.println("Enter Password");
+			 password=s.nextLine();
+		}
+		
+		
+
+		String q="call login('"+op+"','"+username+"','"+password+"')";
+		
+		PreparedStatement psmt=conn.prepareStatement(q);
+		ResultSet rs=psmt.executeQuery();
+		
+		String role=rs.getString("urole");
+		
+		if(role.equals("ADMIN")) {
+			if(rs.next()) {
+				System.out.println(rs.getString("msg") + " " + rs.getString("uname") + "/" + rs.getString("urole") );
+			}
+			signUp();
+		}else {
+			System.out.println(rs.getString("msg") + " " + rs.getString("uname") + "/" + rs.getString("urole") );
+		}
+		
+		
+		
+	}
+	
+	
+	
+	Connection conn;
+	Scanner s;
+	
+	public Authentication() throws Exception {
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		
+		conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/august_batch","root","");
+		
+		s=new Scanner(System.in);
+		
+	}
+	
+	
+
+}

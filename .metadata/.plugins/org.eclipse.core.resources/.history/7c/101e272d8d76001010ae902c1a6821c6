@@ -1,0 +1,64 @@
+package mypack;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.util.Scanner;
+
+public class Authentication {
+
+	public static void main(String[] args) throws Exception {
+		// TODO Auto-generated method stub
+		
+		
+		Authentication auth=new Authentication();
+
+	}
+	
+	
+//	sign up
+	
+	public void signUp() throws Exception {
+		
+		String username,email,password,role;
+		
+		System.out.println("Enter Username");
+		username=s.nextLine();
+		s.nextLine();
+		System.out.println("Enter Email");
+		email=s.nextLine();
+		s.nextLine();
+		System.out.println("Enter Password");
+		password=s.nextLine();
+		s.nextLine();
+		System.out.println("Enter role");
+		role=s.nextLine();
+		s.nextLine();
+		
+		String q="call insert_data_oauth('"+username+"','"+password+"','"+email+"','"+role+"')";
+		
+		PreparedStatement psmt=conn.prepareStatement(q);
+		
+		int success=psmt.executeUpdate();
+		
+		if(success>=1) {
+			System.out.println("Thanks For Signing Up!! ");
+		}
+		
+	}
+	
+	Connection conn;
+	Scanner s;
+	
+	public Authentication() throws Exception {
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		
+		conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/august_batch","root","");
+		
+		s=new Scanner(System.in);
+		
+	}
+	
+	
+
+}

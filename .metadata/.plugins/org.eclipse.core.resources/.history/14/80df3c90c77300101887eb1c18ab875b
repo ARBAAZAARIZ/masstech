@@ -1,0 +1,120 @@
+package mypack;
+
+import 	java.sql.*;
+import java.util.LinkedList;
+import java.util.Scanner;
+
+public class DB_Operation {
+	Connection conn;
+	Scanner s;
+	
+	public DB_Operation() throws Exception {
+		
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/august_batch","root","");
+		
+		s=new Scanner(System.in);
+	}
+	
+	
+	
+	public void AddEmp() throws Exception {
+		String name,email;
+		double sal;
+		
+		System.out.println("Enter Name:");
+		name=s.nextLine();
+		
+		System.out.println("Enter Email:");
+		email=s.nextLine();
+		
+		System.out.println("Enter Salary:");
+		sal=s.nextDouble();
+		
+		String q="Call addEmpProc('"+name+"','"+email+"','"+sal+"')";
+		
+		PreparedStatement psmt=conn.prepareStatement(q);
+		
+		int success=psmt.executeUpdate();
+		
+
+		if(success>=1) {
+			System.out.println("Your new Employee is added Successfully");
+		}
+
+			
+	}
+	
+	public  void fetchEmp() throws Exception{
+		String q="Call FetchEmpProc()";
+		PreparedStatement psmt=conn.prepareStatement(q);
+		ResultSet rs=psmt.executeQuery();
+		
+		while(rs.next()) {
+			System.out.println("ID "+rs.getInt("eid") + "                NAME : " + rs.getString("ename") +"          EMAIL : " 
+		+ rs.getString("email") + "         SALARY : " + rs.getDouble("esalary")   );
+			
+			System.out.println("-------------------------------------------------------------------------------------------------------");
+		}
+		
+	}
+	
+	public void deleteEmp()throws Exception{
+		
+		System.out.println("Enter ID to delete employee");
+		int id=s.nextInt();
+		
+		String q="Call deleteEmpProc('"+id+"')";
+		PreparedStatement psmt=conn.prepareStatement(q);
+		
+		int success = psmt.executeUpdate();
+		if(success>=1) {
+			System.out.println("Your Employee is been deleted successfully!");
+		}
+		
+	}
+	
+	public void updateEmp()throws Exception{
+		
+		String name,email;
+		double sal;
+		int id;
+		
+		System.out.println("Enter ID:");
+		id=s.nextInt();
+		
+		s.nextLine();
+		
+		System.out.println("Enter Name:");
+		name=s.nextLine();
+		
+		System.out.println("Enter Email:");
+		email=s.nextLine();
+		
+		System.out.println("Enter Salary:");
+		sal=s.nextDouble();
+		
+		String q="Call updtEmpProc('"+id+"','"+name+"','"+email+"','"+sal+"')";
+		
+		PreparedStatement psmt=conn.prepareStatement(q);
+		
+		int success=psmt.executeUpdate();
+		
+
+		if(success>=1) {
+			System.out.println("Your new Employee is added Successfully");
+		}
+	}
+	
+	
+	
+	public static void main(String[] args) throws Exception {
+		DB_Operation obj=new DB_Operation();
+		obj.AddEmp();
+		obj.fetchEmp();
+		obj.deleteEmp();
+		obj.fetchEmp();
+		obj.updateEmp();
+		obj.fetchEmp();
+	}
+}
