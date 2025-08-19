@@ -1,0 +1,16 @@
+'Wireless Mouse               ' , '  Ergonomic wireless mouse, smooth grip. '    , 799.00, 8;
+'Mechanical Keyboard          ' , '  RGB keys, tactile feel, fast response. '    , 2499.00, 14;
+'Noise Cancelling Headphones  ' , '  Clear sound, deep bass, comfy design.  '    , 3499.00, 5;
+'Smartwatch Pro               ' , '  Fitness tracker, AMOLED, waterproof.   '    , 5999.00, 12;
+'Portable SSD 1TB             ' , '  Fast, compact, shockproof storage.     '    , 6499.00, 20;
+
+'Bluetooth Speaker            ' , 'Compact speaker with rich sound.         '    , 1999.00, 15;
+'Gaming Monitor 24"           ' , 'Full HD display with fast refresh.       '    , 10999.00, 10;
+'USB-C Hub                    ',  'Multiport adapter for fast transfer.     '    , 1499.00, 25;
+
+
+
+
+
+
+

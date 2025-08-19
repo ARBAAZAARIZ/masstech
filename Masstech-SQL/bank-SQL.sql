@@ -21,7 +21,7 @@ CREATE TABLE bankuser (
 DESC oauth;
 DESC bankuser;
 
-
+select* from oauth;
 
 DELIMITER $$
 
@@ -408,9 +408,10 @@ DELIMITER ;
 
 call get_account_details("AXIS",1);
 
-select * from bank b inner join bankuser u on b.userid=u.userid where u.email="arbaaz@gmail.com";
+select * from bank b inner join bankuser u on b.userid=u.userid where u.email="arbaaz@gmail.com" ;
 
-select * from bank;
+select * from bank inner join bankuser on bank.userid = bankuser.userid inner join oauth on oauth.email=bankuser.email;
 select * from bankuser;
+select * from oauth;
 
 

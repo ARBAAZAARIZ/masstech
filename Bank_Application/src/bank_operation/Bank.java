@@ -665,13 +665,6 @@ public class Bank {
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
 	public static void main(String[] args) throws Exception {
 	    System.out.println("==================================================");
 	    System.out.println("           WELCOME TO OUR BANKING SERVICE         ");
