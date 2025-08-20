@@ -112,6 +112,7 @@ public class Authentication {
 	            user.email = rs.getString("email");
 	            user.address=rs.getString("address");
 	            user.role = rs.getString("role");
+	            user.status=rs.getString("user_status");
 	            
 	            System.out.println(" Login Successful. Welcome, " + user.username + "!");
 	    	} else {

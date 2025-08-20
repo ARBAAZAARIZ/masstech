@@ -9,7 +9,8 @@ create table users (
     password varchar(100) not null,
     email varchar(100) not null unique,
     role varchar(20) not null,
-    address varchar(500)
+    address varchar(500),
+    user_status varchar(10) default("ACTIVE")
 );
 
 
@@ -66,7 +67,7 @@ create table bank (
 );
 
 
-
+drop procedure login;
 
 delimiter $$
 
@@ -81,10 +82,11 @@ begin
     declare db_role varchar(20);
     declare db_email varchar(100);
     declare db_address varchar(500);
+    declare db_status varchar(10);
 
     
-    select password, username, user_id, role, email, address
-    into db_password, db_username, db_userid, db_role, db_email,db_address
+    select password, username, user_id, role, email, address,user_status
+    into db_password, db_username, db_userid, db_role, db_email,db_address,db_status
     from users
     where email = login_id or username = login_id ;
 
@@ -96,6 +98,7 @@ begin
             db_role as role,
             db_email as email,
             db_address as address,
+            db_status as user_status,
             1 as status;
     else
         select 
@@ -105,6 +108,7 @@ begin
             null as role,
             null as email,
             null as address,
+            null as user_status,
             0 as status;
     end if;
 end$$
@@ -463,7 +467,8 @@ call depositeMoney(8,"AXIS BANK",42000);
 
 select * from bank b inner join users u on u.user_id=b.user_id;
 
-
+select *   from users;
+select * from products;
 
 
 

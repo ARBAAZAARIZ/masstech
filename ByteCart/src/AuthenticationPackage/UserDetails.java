@@ -7,4 +7,5 @@ public class UserDetails {
 	public String role;
 	public String address;
 	public boolean authenticated;
+	public String status;
 }

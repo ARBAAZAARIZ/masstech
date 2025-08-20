@@ -39,6 +39,8 @@ public class UserPanel {
 	
 	
 	public boolean userInterface(UserDetails user) throws Exception {
+		
+		status=true;
 
 	    while (status) {
 	        System.out.println("\n========================================");
@@ -52,6 +54,7 @@ public class UserPanel {
 	        System.out.println("  4. Update Account");
 	        System.out.println("  5. Create New Bank Account");
 	        System.out.println("  6. Deposit Money");
+	        System.out.println("  7. Logout");
 	        System.out.println("----------------------------------------");
 	        System.out.print("Your choice: ");
 
@@ -71,26 +74,27 @@ public class UserPanel {
 	                boolean success = addProductToCart(user);
 	                if (success) {
 	                    viewCart(user);
-	                    placingOrder(user);
+	                  boolean orderplaced=  placingOrder(user);
+	                  System.out.println();
+	                  
+	                  if(orderplaced) {
+	                	  purchaseProductHistory(user);
+	                  }
 	                }
+	            }else {
+	            	status=false;
 	            }
-
-	            System.out.println("\n----------------------------------------");
-	            System.out.println("  1. Return to Main Menu");
-	            System.out.println("  2. Exit");
-	            System.out.println("----------------------------------------");
-	            System.out.print("Your choice: ");
-	            choice = sc.nextInt();
-
-	            if (choice != 1) {
-	                status = false;
-	            }
-
+	           
+	            
+	            
 	        } else if (choice == 2) {
 	            viewCart(user);
 
 	            if (cartCount > 0) {
-	                placingOrder(user);
+	               boolean orderedPurchased= placingOrder(user);
+	               if(orderedPurchased) {
+	            	   purchaseProductHistory(user);
+	               }
 	            }
 
 	        } else if (choice == 3) {
@@ -211,21 +215,62 @@ public class UserPanel {
 	    System.out.print("Enter Quantity   : ");
 	    int qunt = sc.nextInt();
 
-	    String addProductIntoCart = "call add_product_into_cart('" + user.id + "','" + proId + "','" + qunt + "')";
-	    PreparedStatement psmt = conn.prepareStatement(addProductIntoCart);
-	    ResultSet rs = psmt.executeQuery();
+	    
+	    String stockQuery = "SELECT stock FROM products WHERE product_id = '" + proId + "'";
+	    PreparedStatement stockPsmt = conn.prepareStatement(stockQuery);
+	    ResultSet stockRs = stockPsmt.executeQuery();
 
-	    System.out.println("\n----------------------------------------");
-	    if (rs.next()) {
-	        System.out.println(rs.getString("msg"));
-	        System.out.println("----------------------------------------\n");
-	        return rs.getInt("status") == 1;
+	    if (stockRs.next()) {
+	        int availableStock = stockRs.getInt("stock");
+
+	        if (availableStock == 0) {
+	            System.out.println("\n----------------------------------------");
+	            System.out.println("Product is currently out of stock.");
+	            System.out.println("----------------------------------------\n");
+	            return false;
+	        }
+
+	        if (qunt > availableStock) {
+	            System.out.println("\n----------------------------------------");
+	            System.out.println("Only " + availableStock + " units are available.");
+	            System.out.print("Do you want to proceed with available quantity? (y/n): ");
+	            sc.nextLine(); 
+	            String confirm = sc.nextLine();
+
+	            if (!confirm.equalsIgnoreCase("y")) {
+	                System.out.println("Operation cancelled by user.");
+	                System.out.println("----------------------------------------\n");
+	                return false;
+	            }
+
+	            
+	            qunt = availableStock;
+	        }
+
+	        
+	        String addProductIntoCart = "call add_product_into_cart('" + user.id + "','" + proId + "','" + qunt + "')";
+	        PreparedStatement psmt = conn.prepareStatement(addProductIntoCart);
+	        ResultSet rs = psmt.executeQuery();
+
+	        System.out.println("\n----------------------------------------");
+	        if (rs.next()) {
+	            System.out.println(rs.getString("msg"));
+	            System.out.println("----------------------------------------\n");
+	            return rs.getInt("status") == 1;
+	        } else {
+	            System.out.println("Something went wrong. Please try again.");
+	            System.out.println("----------------------------------------\n");
+	            return false;
+	        }
+
 	    } else {
-	        System.out.println("Something went wrong. Please try again.");
+	        System.out.println("\n----------------------------------------");
+	        System.out.println("Invalid Product ID. No such product found.");
 	        System.out.println("----------------------------------------\n");
 	        return false;
 	    }
 	}
+
 
 	
 	
@@ -279,7 +324,7 @@ public class UserPanel {
 	
 	
 	
-	public void placingOrder(UserDetails user) throws Exception {
+	public boolean placingOrder(UserDetails user) throws Exception {
 	    System.out.println("\n========================================");
 	    System.out.println("           PLACE YOUR ORDER             ");
 	    System.out.println("========================================");
@@ -379,6 +424,8 @@ public class UserPanel {
 	                System.out.println("----------------------------------------");
 	                System.out.println("         ORDER COMPLETED SUCCESSFULLY   ");
 	                System.out.println("----------------------------------------\n");
+	                
+	                return true;
 
 	            } else {
 	                try {
@@ -390,8 +437,12 @@ public class UserPanel {
 	                    System.out.println(e.getMessage());
 	                    System.out.println("----------------------------------------\n");
 	                }
+	                return false;
 	            }
+	        }else {
+	        	return false;
 	        }
+	        
 	        
 	    }
 	    else {
@@ -400,6 +451,7 @@ public class UserPanel {
 	        System.out.println("   Please return to main menu to add    ");
 	        System.out.println("         a new bank account.            ");
 	        System.out.println("----------------------------------------\n");
+	        return false;
 	    }
 	}
 
@@ -585,21 +637,31 @@ public class UserPanel {
 	    System.out.println("========================================");
 
 	    if (products.isEmpty()) {
-	        System.out.println("No products available.");
+	        System.out.println("No products available at the moment.");
 	    } else {
 	        for (Product p : products) {
-	            System.out.println("----------------------------------------");
+	            System.out.println("\n----------------------------------------");
 	            System.out.println("Product ID      : " + p.product_id);
 	            System.out.println("Name            : " + p.product_name);
 	            System.out.println("Description     : " + p.product_description);
 	            System.out.println("Price           : " + p.price);
-	            System.out.println("Stock Available : " + p.stock);
+
+	            
+	            if (p.stock == 0) {
+	                System.out.println("Status          : Currently Not Available");
+	            } else if (p.stock <= 5) {
+	                System.out.println("Status          : Limited Availability");
+	            } else {
+	                System.out.println("Status          : Available");
+	            }
 	        }
-	        System.out.println("----------------------------------------");
+	        System.out.println("\n----------------------------------------");
 	    }
 
 	    System.out.println("========================================\n");
 	}
+
+
 
 
 	
