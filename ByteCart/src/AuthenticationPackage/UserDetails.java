@@ -8,4 +8,5 @@ public class UserDetails {
 	public String address;
 	public boolean authenticated;
 	public String status;
+	public String byte_pay_account;
 }

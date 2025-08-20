@@ -113,6 +113,7 @@ public class Authentication {
 	            user.address=rs.getString("address");
 	            user.role = rs.getString("role");
 	            user.status=rs.getString("user_status");
+	            user.byte_pay_account=rs.getString("byte_pay_account");
 	            
 	            System.out.println(" Login Successful. Welcome, " + user.username + "!");
 	    	} else {

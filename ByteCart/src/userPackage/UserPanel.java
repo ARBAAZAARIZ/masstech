@@ -13,7 +13,7 @@ import java.util.Scanner;
 import AuthenticationPackage.Authentication;
 import AuthenticationPackage.UserDetails;
 import exceptionsPackage.InsufficientBalanceException;
-
+import mainPackage.E_Commerce_Application;
 import productPackage.Product;
 
 public class UserPanel {
@@ -48,13 +48,15 @@ public class UserPanel {
 	        System.out.println("========================================");
 	        System.out.println("Please choose an option:");
 	        System.out.println("----------------------------------------");
-	        System.out.println("  1. View Products");
-	        System.out.println("  2. View Cart");
-	        System.out.println("  3. View Purchased Products");
-	        System.out.println("  4. Update Account");
-	        System.out.println("  5. Create New Bank Account");
-	        System.out.println("  6. Deposit Money");
-	        System.out.println("  7. Logout");
+	        System.out.println("  1.  View Products");
+	        System.out.println("  2.  View Cart");
+	        System.out.println("  3.  View Purchased Products");
+	        System.out.println("  4.  Update Account");
+	        System.out.println("  5.  Create New Bank Account");
+	        System.out.println("  6.  Deposit Money Into Your Bank Account");
+	        System.out.println("  7.  Create Byte Pay Account");
+	        System.out.println("  8.  Deposite Money in Byte Pay");
+	        System.out.println("  9.  Logout");
 	        System.out.println("----------------------------------------");
 	        System.out.print("Your choice: ");
 
@@ -154,7 +156,43 @@ public class UserPanel {
 	                status = false;
 	            }
 
-	        } else {
+	        } else if (choice == 7) {
+	            
+	        	if(user.byte_pay_account==null) {
+	        		createBytePay(user);
+	        	}else {
+	        		System.out.println("You already have a Byte Pay Account");
+	        	}
+	        	 System.out.println("\n----------------------------------------");
+		            System.out.println("  1. Return to Main Menu");
+		            System.out.println("  2. Exit");
+		            System.out.println("----------------------------------------");
+		            System.out.print("Your choice: ");
+		            choice = sc.nextInt();
+
+		            if (choice != 1) {
+		                status = false;
+		            }
+
+	            
+
+	        }else if (choice == 8) {
+	            
+	        	depositMoneyBytePay(user);
+	        	 System.out.println("\n----------------------------------------");
+		            System.out.println("  1. Return to Main Menu");
+		            System.out.println("  2. Exit");
+		            System.out.println("----------------------------------------");
+		            System.out.print("Your choice: ");
+		            choice = sc.nextInt();
+
+		            if (choice != 1) {
+		                status = false;
+		            }
+
+	            
+
+	        }else {
 	            status = false;
 	        }
 	    }
@@ -324,136 +362,16 @@ public class UserPanel {
 	
 	
 	
-	public boolean placingOrder(UserDetails user) throws Exception {
-	    System.out.println("\n========================================");
-	    System.out.println("           PLACE YOUR ORDER             ");
-	    System.out.println("========================================");
-	    
 
-	    int cnt = 0;
-	    String cntBankQuery = "select count(*) as cnt from bank where user_id='" + user.id + "'";
-	    PreparedStatement psmtCnt = conn.prepareStatement(cntBankQuery);
-	    ResultSet cntRs = psmtCnt.executeQuery();
+	
+	
+	
+	
+	
+	
+	
 
-	    if (cntRs.next()) {
-	        cnt = cntRs.getInt("cnt");
-	    }
 
-	    if (cnt > 0) {
-	    	
-	    	System.out.println();
-		    System.out.println("1. Place items currently in cart");
-		    System.out.println();
-		    System.out.println("2. Add more products to cart");
-		    System.out.print("Enter your choice: ");
-		    choice = sc.nextInt();
-	    	
-	        List<String> bankNames = new ArrayList<>();
-
-	        if (choice == 1) {
-	            System.out.println("\n----------------------------------------");
-	            System.out.println("           SELECT BANK TO PAY           ");
-	            System.out.println("----------------------------------------");
-
-	            String bankNameQuery = "select bank_name from bank where user_id='" + user.id + "'";
-	            PreparedStatement psmt = conn.prepareStatement(bankNameQuery);
-	            ResultSet rs = psmt.executeQuery();
-
-	            while (rs.next()) {
-	                bankNames.add(rs.getString("bank_name"));
-	            }
-
-	            for (int i = 0; i < bankNames.size(); i++) {
-	                System.out.println((i + 1) + ". " + bankNames.get(i));
-	            }
-
-	            System.out.print("Choose bank (1 - " + bankNames.size() + "): ");
-	            choice = sc.nextInt() - 1;
-	            String bankName = bankNames.get(choice);
-
-	            double balance = 0;
-	            String balanceQuery = "select balance from bank where user_id = '" + user.id + "' and bank_name='" + bankName + "'";
-	            psmt = conn.prepareStatement(balanceQuery);
-	            rs = psmt.executeQuery();
-
-	            if (rs.next()) {
-	                balance = rs.getDouble("balance");
-	            }
-
-	            double totalAmountToBePaid = 0;
-	            String totalAmountQuery = "select sum(total_price) as total_amount from cart where user_id='" + user.id + "'";
-	            psmt = conn.prepareStatement(totalAmountQuery);
-	            rs = psmt.executeQuery();
-
-	            if (rs.next()) {
-	                totalAmountToBePaid = rs.getDouble("total_amount");
-	            }
-
-	            if (balance >= totalAmountToBePaid) {
-	                String cartListQuery = "select * from cart where user_id='" + user.id + "'";
-	                psmt = conn.prepareStatement(cartListQuery);
-	                rs = psmt.executeQuery();
-
-	                System.out.println("\n----------------------------------------");
-	                System.out.println("         PROCESSING YOUR ORDER          ");
-	                System.out.println("----------------------------------------");
-
-	                while (rs.next()) {
-	                    int cartId = rs.getInt("cart_id");
-	                    int productId = rs.getInt("product_id");
-	                    String productName = rs.getString("product_name");
-	                    int quantity = rs.getInt("quantity");
-	                    double productPrice = rs.getDouble("product_price");
-	                    double totalPrice = rs.getDouble("total_price");
-
-	                    String purchasingProductQuery = "call placeing_order('" + cartId + "','" + user.id + "','" + productId + "','" + productName + "','" + quantity + "','" + productPrice + "','" + totalPrice + "','" + bankName + "')";
-	                    PreparedStatement psmtPurchase = conn.prepareStatement(purchasingProductQuery);
-	                    ResultSet rsPurchase = psmtPurchase.executeQuery();
-
-	                    if (rsPurchase.next()) {
-	                        Thread.sleep(200);
-	                        int status = rsPurchase.getInt("status");
-	                        if (status == 1) {
-	                            System.out.println(" " + productName + " purchased successfully.");
-	                        } else {
-	                            System.out.println(" " + rsPurchase.getString("msg"));
-	                        }
-	                    }
-	                }
-
-	                System.out.println("----------------------------------------");
-	                System.out.println("         ORDER COMPLETED SUCCESSFULLY   ");
-	                System.out.println("----------------------------------------\n");
-	                
-	                return true;
-
-	            } else {
-	                try {
-	                    throw new InsufficientBalanceException("Insufficient Balance Available\nCurrent balance: " + balance + "\nAmount to be paid: " + totalAmountToBePaid);
-	                } catch (InsufficientBalanceException e) {
-	                    System.out.println("\n----------------------------------------");
-	                    System.out.println("           PAYMENT FAILED               ");
-	                    System.out.println("----------------------------------------");
-	                    System.out.println(e.getMessage());
-	                    System.out.println("----------------------------------------\n");
-	                }
-	                return false;
-	            }
-	        }else {
-	        	return false;
-	        }
-	        
-	        
-	    }
-	    else {
-	        System.out.println("\n----------------------------------------");
-	        System.out.println("   No bank account linked for payment   ");
-	        System.out.println("   Please return to main menu to add    ");
-	        System.out.println("         a new bank account.            ");
-	        System.out.println("----------------------------------------\n");
-	        return false;
-	    }
-	}
 
 	
 	
@@ -660,6 +578,324 @@ public class UserPanel {
 
 	    System.out.println("========================================\n");
 	}
+	
+	public void createBytePay(UserDetails user) throws Exception {
+		
+	    System.out.println("\n========================================");
+	    System.out.println("         BYTE PAY CREATION SECTION      ");
+	    System.out.println("========================================");
+
+	    
+	    Random rand = new Random();
+	    Long ranAcNo = rand.nextLong(10000000, 1000000000);
+	    String raAc = ranAcNo.toString();
+
+	    
+	    System.out.print("Creating Account");
+	    for (int i = 0; i <= 10; i++) {
+	        Thread.sleep(200);
+	        System.out.print(".");
+	    }
+
+	    
+	    System.out.println("\n\nEnter Initial Deposit Amount : ");
+	    double balance = sc.nextDouble();
+
+	    
+	    int pin;
+	    do {
+	        System.out.print("Enter 4-digit PIN or greater  : ");
+	        pin = sc.nextInt();
+	        if (pin < 1000) {
+	            System.out.println("PIN must be at least 4 digits. Try again.");
+	        }
+	    } while (pin < 1000);
+
+	    
+	    String createByteQuery = "INSERT INTO byte_pay (account_no, balance, user_id, pin) " +
+	                             "VALUES ('" + raAc + "', '" + balance + "', '" + user.id + "', '" + pin + "')";
+	    PreparedStatement psmt = conn.prepareStatement(createByteQuery);
+	    int success = psmt.executeUpdate();
+
+	    
+	    for (int i = 0; i <= 5; i++) {
+	        Thread.sleep(200);
+	        System.out.print(".");
+	    }
+
+	    
+	    System.out.println("\n----------------------------------------");
+	    if (success >= 1) {
+	        System.out.println("BytePay Account Created Successfully!");
+	        System.out.println("Account No : " + raAc);
+	        E_Commerce_Application.user.byte_pay_account=raAc;
+	    } else {
+	        System.out.println("Account creation failed. You may already have an account.");
+	    }
+	    System.out.println("----------------------------------------\n");
+	}
+	
+	
+	
+	
+	
+	public void depositMoneyBytePay(UserDetails user) throws Exception {
+	    System.out.println("\n========================================");
+	    System.out.println("         DEPOSIT MONEY IN BYTE PAY      ");
+	    System.out.println("========================================");
+
+	    System.out.print("Enter amount to deposit : ");
+	    double depositAmount = sc.nextDouble();
+
+	    
+	    String fetchBalanceQuery = "SELECT balance FROM byte_pay WHERE user_id = '" + user.id + "'";
+	    PreparedStatement fetchPsmt = conn.prepareStatement(fetchBalanceQuery);
+	    ResultSet rs = fetchPsmt.executeQuery();
+
+	    if (rs.next()) {
+	        double currentBalance = rs.getDouble("balance");
+	        double updatedBalance = currentBalance + depositAmount;
+
+	        
+	        String updateBalanceQuery = "UPDATE byte_pay SET balance = '" + updatedBalance + "' WHERE user_id = '" + user.id + "'";
+	        PreparedStatement updatePsmt = conn.prepareStatement(updateBalanceQuery);
+	        int success = updatePsmt.executeUpdate();
+
+	        System.out.println("\n----------------------------------------");
+	        if (success >= 1) {
+	            System.out.println("Deposit Successful!");
+	            System.out.println("Updated Balance : ₹" + updatedBalance);
+	        } else {
+	            System.out.println("Deposit Failed. Please try again.");
+	        }
+	        System.out.println("----------------------------------------\n");
+
+	    } else {
+	        System.out.println("\n----------------------------------------");
+	        System.out.println("No BytePay account found for this user.");
+	        System.out.println("----------------------------------------\n");
+	    }
+	}
+	
+	
+	
+	
+	
+	public boolean placingOrderUsingBytePay(UserDetails user) throws Exception {
+
+	    System.out.println("Ordering using bytepay");
+
+	    // Step 1: Check if BytePay account exists
+	    if (user.byte_pay_account == null || user.byte_pay_account.trim().isEmpty()) {
+	        System.out.println("No BytePay account linked to your profile. Please create one to proceed.");
+	        return false;
+	    }
+
+	    // Step 2: Fetch balance and pin
+	    double balance = 0;
+	    int pin = 0;
+
+	    String balanceQuery = "select balance, pin from byte_pay where user_id = '" + user.id + "'";
+	    PreparedStatement balancePsmt = conn.prepareStatement(balanceQuery);
+	    ResultSet balanceRs = balancePsmt.executeQuery();
+
+	    if (balanceRs.next()) {
+	        balance = balanceRs.getDouble("balance");
+	        pin = balanceRs.getInt("pin");
+	    }
+
+	    // Step 3: Get total cart amount
+	    double totalPrice = 0;
+
+	    String totalAmountQuery = "select sum(total_price) as totalAmount from cart where user_id = '" + user.id + "'";
+	    PreparedStatement totalAmountPsmt = conn.prepareStatement(totalAmountQuery);
+	    ResultSet totalAmountRs = totalAmountPsmt.executeQuery();
+
+	    if (totalAmountRs.next()) {
+	        totalPrice = totalAmountRs.getDouble("totalAmount");
+	    }
+
+	    // Step 4: Validate pin
+	    System.out.println("Enter your pin");
+	    int inputPin = sc.nextInt();
+
+	    if (pin == inputPin) {
+	        if (balance >= totalPrice) {
+	            // Step 5: Fetch cart items and place orders
+	            String cartQuery = "select * from cart where user_id = '" + user.id + "'";
+	            PreparedStatement cartPsmt = conn.prepareStatement(cartQuery);
+	            ResultSet cartRs = cartPsmt.executeQuery();
+
+	            while (cartRs.next()) {
+	                int cId = cartRs.getInt("cart_id");
+	                int pId = cartRs.getInt("product_id");
+	                String pName = cartRs.getString("product_name");
+	                int qnt = cartRs.getInt("quantity");
+	                double pPrice = cartRs.getDouble("product_price");
+	                double pTPrice = cartRs.getDouble("total_price");
+
+	                String placeOrderQuery = "call placing_order_using_byte_pay('" + user.id + "','" + pId + "','" + cId + "','" + pName + "','" + user.byte_pay_account + "','" + qnt + "','" + pPrice + "','" + pTPrice + "')";
+	                PreparedStatement placeOrderPsmt = conn.prepareStatement(placeOrderQuery);
+	                ResultSet placeOrderRs = placeOrderPsmt.executeQuery();
+
+	                if (placeOrderRs.next()) {
+	                    int status = placeOrderRs.getInt("status");
+	                    if (status == 1) {
+	                        System.out.println("Ordered Purchased Successfully for product " + pName);
+	                    } else {
+	                        System.out.println(placeOrderRs.getString("msg"));
+	                    }
+	                } else {
+	                    System.out.println("Something went wrong, try after some time.");
+	                }
+	            }
+
+	            return true;
+
+	        } else {
+	            try {
+	                throw new InsufficientBalanceException("Insufficient Balance Available\nCurrent balance: " + balance + "\nAmount to be paid: " + totalPrice);
+	            } catch (InsufficientBalanceException e) {
+	                System.out.println(e.getMessage());
+	            }
+	        }
+
+	    } else {
+	        System.out.println("Wrong pin");
+	    }
+
+	    return false;
+	}
+
+	
+	
+	
+	
+	public boolean plcingOrderUsingBankAccount(UserDetails user) throws Exception {
+	    System.out.println("\n========================================");
+	    System.out.println("         PLACE ORDER USING BANK         ");
+	    System.out.println("========================================");
+
+	    
+	    String bankCountQuery = "SELECT COUNT(*) AS cnt FROM bank WHERE user_id = '" + user.id + "'";
+	    PreparedStatement countPsmt = conn.prepareStatement(bankCountQuery);
+	    ResultSet countRs = countPsmt.executeQuery();
+
+	    int bankCount = 0;
+	    if (countRs.next()) {
+	        bankCount = countRs.getInt("cnt");
+	    }
+
+	    if (bankCount == 0) {
+	        System.out.println("\n----------------------------------------");
+	        System.out.println("No bank account linked to your profile.");
+	        System.out.println("Please add a bank account to proceed.");
+	        System.out.println("----------------------------------------\n");
+	        return false;
+	    }
+
+	    
+	    String bankNamesQuery = "SELECT bank_name FROM bank WHERE user_id = '" + user.id + "'";
+	    PreparedStatement bankPsmt = conn.prepareStatement(bankNamesQuery);
+	    ResultSet bankRs = bankPsmt.executeQuery();
+
+	    List<String> bankNames = new ArrayList<>();
+	    while (bankRs.next()) {
+	        bankNames.add(bankRs.getString("bank_name"));
+	    }
+
+	    
+	    System.out.println("\n----------------------------------------");
+	    System.out.println("         SELECT BANK TO PAY WITH        ");
+	    System.out.println("----------------------------------------");
+	    for (int i = 0; i < bankNames.size(); i++) {
+	        System.out.println((i + 1) + ". " + bankNames.get(i));
+	    }
+	    System.out.print("Enter your choice: ");
+	    int bankChoice = sc.nextInt() - 1;
+
+	    if (bankChoice < 0 || bankChoice >= bankNames.size()) {
+	        System.out.println("Invalid bank selection.");
+	        return false;
+	    }
+
+	    String selectedBank = bankNames.get(bankChoice);
+
+	    
+	    String cartQuery = "SELECT * FROM cart WHERE user_id = '" + user.id + "'";
+	    PreparedStatement cartPsmt = conn.prepareStatement(cartQuery);
+	    ResultSet cartRs = cartPsmt.executeQuery();
+
+	    boolean orderPlaced = false;
+
+	    while (cartRs.next()) {
+	        int cartId = cartRs.getInt("cart_id");
+	        int productId = cartRs.getInt("product_id");
+	        String productName = cartRs.getString("product_name");
+	        int quantity = cartRs.getInt("quantity");
+	        double productPrice = cartRs.getDouble("product_price");
+	        double totalPrice = cartRs.getDouble("total_price");
+
+	        
+	        String procedureCall = "{call placeing_order_using_bank('" + cartId + "', '" + user.id + "', '" + productId + "', '" + productName + "', '" + quantity + "', '" + productPrice + "', '" + totalPrice + "', '" + selectedBank + "')}";
+	        PreparedStatement orderPsmt = conn.prepareStatement(procedureCall);
+	        ResultSet orderRs = orderPsmt.executeQuery();
+
+	        if (orderRs.next()) {
+	            int status = orderRs.getInt("status");
+	            String msg = orderRs.getString("msg");
+
+	            if (status == 1) {
+	                System.out.println(productName + " ordered successfully.");
+	                orderPlaced = true;
+	            } else {
+	                System.out.println("Failed to order " + productName + ": " + msg);
+	            }
+	        }
+	    }
+
+	    if (orderPlaced) {
+	        System.out.println("\n----------------------------------------");
+	        System.out.println("      ALL ORDERS PLACED SUCCESSFULLY    ");
+	        System.out.println("----------------------------------------\n");
+	        return true;
+	    } else {
+	        System.out.println("\n----------------------------------------");
+	        System.out.println("      ORDER PLACEMENT FAILED            ");
+	        System.out.println("----------------------------------------\n");
+	        return false;
+	    }
+	}
+
+	
+	public boolean placingOrder(UserDetails user) throws Exception {
+	    System.out.println("\n========================================");
+	    System.out.println("           PLACE YOUR ORDER             ");
+	    System.out.println("========================================");
+
+	    System.out.println("Choose your payment method:");
+	    System.out.println("1. Pay using BytePay");
+	    System.out.println("2. Pay using Bank");
+	    System.out.println("3. Exit");
+	    System.out.print("Enter your choice: ");
+	    int paymentOption = sc.nextInt();
+
+	    switch (paymentOption) {
+	        case 1:
+	            return placingOrderUsingBytePay(user);
+	        case 2:
+	            return plcingOrderUsingBankAccount(user);
+	        	
+	        default:
+	            System.out.println("\nExiting order placement.\n");
+	            return false;
+	    }
+	}
+
+
+
+	
+	
 
 
 

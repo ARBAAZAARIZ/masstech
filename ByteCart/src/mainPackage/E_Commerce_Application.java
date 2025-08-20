@@ -12,6 +12,7 @@ public class E_Commerce_Application {
     static int choice;
     static boolean status = true;
     static Scanner sc = new Scanner(System.in);
+    static public UserDetails user = new UserDetails();
 
     public static void main(String[] args) throws Exception {
 
@@ -22,7 +23,7 @@ public class E_Commerce_Application {
         System.out.println("==================================================\n");
 
         Authentication auth = new Authentication();
-        UserDetails user = new UserDetails();
+        
 
         
         while (status) {

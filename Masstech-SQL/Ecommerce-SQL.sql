@@ -83,12 +83,15 @@ begin
     declare db_email varchar(100);
     declare db_address varchar(500);
     declare db_status varchar(10);
+    declare bd_byte_pay_acc varchar(20);
 
     
     select password, username, user_id, role, email, address,user_status
     into db_password, db_username, db_userid, db_role, db_email,db_address,db_status
     from users
     where email = login_id or username = login_id ;
+    
+    select account_no into bd_byte_pay_acc from byte_pay where user_id=db_userid;
 
     if db_password = input_password then
         select 
@@ -98,7 +101,9 @@ begin
             db_role as role,
             db_email as email,
             db_address as address,
+            bd_byte_pay_acc as byte_pay_account,
             db_status as user_status,
+            
             1 as status;
     else
         select 
@@ -350,9 +355,10 @@ select* from cart where user_id=8;
 select bank_name from bank where user_id=8;
 
 
+
 delimiter $$
 
-create procedure placeing_order(
+create procedure placeing_order_using_bank(
     in c_id int,
     in u_id int,
     in p_id int,
@@ -471,5 +477,75 @@ select *   from users;
 select * from products;
 
 
+create table byte_pay (
+byte_pay_id int primary key auto_increment,
+account_no varchar(20) unique not null,
+balance decimal(10,2),
+user_id int unique,
+pin int not null,
+foreign key (user_id) references users(user_id)
+);
+
+select * from byte_pay;
+
+delete from byte_pay where user_id=12;
+
+delimiter $$
+
+create procedure placing_order_using_byte_pay(
+    in u_id int,
+    in p_id int,
+    in c_id int,
+    in p_name varchar(100),
+    in b_acc varchar(20),
+    in qnt int,
+    in p_price decimal(10,2),
+    in t_price decimal(10,2)
+)
+begin
+    declare bal decimal(10,2);
 
     
+    select balance into bal from byte_pay where account_no = b_acc;
+
+    
+    if bal >= t_price then
+
+        
+        update byte_pay set balance = balance - t_price where account_no = b_acc;
+
+       
+        insert into product_purchased (
+            product_id, user_id, ordered_date, quantity, deliver_date,
+            product_price, total_price, product_name
+        ) values (
+            p_id, u_id, CURDATE(), qnt, DATE_ADD(CURDATE(), INTERVAL 7 DAY),
+            p_price, t_price, p_name
+        );
+
+        
+        delete from cart where cart_id = c_id;
+
+        
+        update products set stock = stock - qnt where product_id = p_id;
+
+       
+        select 'Product purchased successfully. It will be delivered within one week.' as msg, 1 as status;
+
+    else
+        
+        select 'Insufficient balance. Please check your BytePay account.' as msg, 0 as status;
+    end if;
+
+end $$
+
+delimiter ;
+
+
+select * from products;
+    
+select * from cart where user_id=12;
+
+select * from byte_pay where user_id=12;
+
+call placing_order_using_byte_pay(12,11,18,"Portable SSD 1TB             ",529133436,2,6499.00,12998.00);
