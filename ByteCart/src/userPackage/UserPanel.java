@@ -56,7 +56,8 @@ public class UserPanel {
 	        System.out.println("  6.  Deposit Money Into Your Bank Account");
 	        System.out.println("  7.  Create Byte Pay Account");
 	        System.out.println("  8.  Deposite Money in Byte Pay");
-	        System.out.println("  9.  Logout");
+	        System.out.println("  9.  View Byte Pay BAlance");
+	        System.out.println("  10. Logout");
 	        System.out.println("----------------------------------------");
 	        System.out.print("Your choice: ");
 
@@ -191,6 +192,10 @@ public class UserPanel {
 		            }
 
 	            
+
+	        }else if (choice == 9) {
+	            
+	        	viewBytePayBalance(user);
 
 	        }else {
 	            status = false;
@@ -891,11 +896,39 @@ public class UserPanel {
 	            return false;
 	    }
 	}
-
-
-
 	
 	
+	
+	public void viewBytePayBalance(UserDetails user) throws Exception {
+	    System.out.println("\n========================================");
+	    System.out.println("         BYTEPAY BALANCE CHECK          ");
+	    System.out.println("========================================");
+
+	    
+	    if (user.byte_pay_account == null || user.byte_pay_account.trim().isEmpty()) {
+	        System.out.println("No BytePay account linked to your profile. Please create one to view balance.");
+	        return;
+	    }
+
+	   
+	    String balanceQuery = "SELECT balance FROM byte_pay WHERE user_id = '" + user.id + "'";
+	    PreparedStatement psmt = conn.prepareStatement(balanceQuery);
+	    ResultSet rs = psmt.executeQuery();
+
+	    if (rs.next()) {
+	        double balance = rs.getDouble("balance");
+	        System.out.println("Your BytePay account balance is: ₹" + balance);
+	    } else {
+	        System.out.println("Unable to fetch balance. Please try again later.");
+	    }
+
+	    System.out.println("========================================\n");
+	    
+	    for(int i=0;i<=10;i++) {
+	    	Thread.sleep(150);
+	    }
+	    
+	}
 
 
 

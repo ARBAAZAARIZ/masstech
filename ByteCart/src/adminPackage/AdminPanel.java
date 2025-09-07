@@ -266,9 +266,39 @@ public class AdminPanel {
 	    System.out.print("Enter Product ID to delete : ");
 	    int id = sc.nextInt();
 
-	    String deleteProductQuery = "delete from products where product_id = '" + id + "'";
-	    PreparedStatement psmt = conn.prepareStatement(deleteProductQuery);
+	    
+	    String cartCountQuery = "SELECT COUNT(*) AS cnt FROM cart WHERE product_id = '" + id + "'";
+	    PreparedStatement cartPsmt = conn.prepareStatement(cartCountQuery);
+	    ResultSet cartRs = cartPsmt.executeQuery();
 
+	    int cartCount = 0;
+	    if (cartRs.next()) {
+	        cartCount = cartRs.getInt("cnt");
+	    }
+
+	    
+	    String purchaseCountQuery = "SELECT COUNT(*) AS cnt FROM product_purchased WHERE product_id = '" + id + "'";
+	    PreparedStatement purchasePsmt = conn.prepareStatement(purchaseCountQuery);
+	    ResultSet purchaseRs = purchasePsmt.executeQuery();
+
+	    int purchaseCount = 0;
+	    if (purchaseRs.next()) {
+	        purchaseCount = purchaseRs.getInt("cnt");
+	    }
+
+	   
+	    if (cartCount > 0 || purchaseCount > 0) {
+	        System.out.println("\n----------------------------------------");
+	        System.out.println("Status : Failed");
+	        System.out.println("Message: Product cannot be deleted.");
+	        System.out.println("Reason : This product is linked to cart or purchase history.");
+	        System.out.println("----------------------------------------\n");
+	        return;
+	    }
+
+	    
+	    String deleteProductQuery = "DELETE FROM products WHERE product_id = '" + id + "'";
+	    PreparedStatement psmt = conn.prepareStatement(deleteProductQuery);
 	    int success = psmt.executeUpdate();
 
 	    System.out.println("\n----------------------------------------");
@@ -281,6 +311,9 @@ public class AdminPanel {
 	    }
 	    System.out.println("----------------------------------------\n");
 	}
+
+	
+	
 	
 	public void purchaseHistoryByCustomer() throws Exception {
 	    System.out.println("\n========================================");
@@ -294,11 +327,15 @@ public class AdminPanel {
 	    boolean hasData = false;
 
 	    while (rs.next()) {
+	    	
+	    		
+	    	
 	        hasData = true;
 
 	        int purchaseId = rs.getInt("pro_pur_id");
 	        int productId = rs.getInt("product_id");
 	        int userId = rs.getInt("user_id");
+	        String username=rs.getString("username");
 	        String productName = rs.getString("product_name");
 	        Date orderedDate = rs.getDate("ordered_date");
 	        int quantity = rs.getInt("quantity");
@@ -310,6 +347,7 @@ public class AdminPanel {
 	        System.out.println("Purchase ID     : " + purchaseId);
 	        System.out.println("Product ID      : " + productId);
 	        System.out.println("User ID         : " + userId);
+	        System.out.println("Username        : " + username);
 	        System.out.println("Product Name    : " + productName);
 	        System.out.println("Ordered Date    : " + orderedDate);
 	        System.out.println("Quantity        : " + quantity);

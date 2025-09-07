@@ -371,7 +371,9 @@ create procedure placeing_order_using_bank(
 begin 
     declare b_id int default 0;
     declare s_balance decimal(10,2);
+    declare u_name varchar(50);
 
+	select username into u_name from users where user_id=u_id;
     
     select bank_id, balance into b_id, s_balance  
     from bank 
@@ -379,7 +381,7 @@ begin
 
     
     if s_balance >= t_price then
-        -- Deduct balance
+        
         set s_balance = s_balance - t_price;
 
         update bank 
@@ -387,8 +389,8 @@ begin
         where bank_id = b_id;
 
         
-        insert into product_purchased (product_id, user_id, ordered_date, quantity, deliver_date, product_price, total_price,product_name)
-				values (p_id, u_id, CURDATE(), qnt, DATE_ADD(CURDATE(), INTERVAL 7 DAY), p_price, t_price,p_name);
+        insert into product_purchased (product_id, user_id, ordered_date, quantity, deliver_date, product_price, total_price,product_name, username)
+				values (p_id, u_id, CURDATE(), qnt, DATE_ADD(CURDATE(), INTERVAL 7 DAY), p_price, t_price,p_name,u_name);
 
         
         delete from cart 
@@ -405,6 +407,7 @@ begin
 end$$
 
 delimiter ;
+
 
 
 call placeing_order(1,8,5,"Mechanical Keyboard",6,2499.00,14994.00,"SBI BANK");
@@ -504,6 +507,9 @@ create procedure placing_order_using_byte_pay(
 )
 begin
     declare bal decimal(10,2);
+    declare u_name varchar(50);
+    
+    select username into u_name from users where user_id = u_id;
 
     
     select balance into bal from byte_pay where account_no = b_acc;
@@ -517,10 +523,10 @@ begin
        
         insert into product_purchased (
             product_id, user_id, ordered_date, quantity, deliver_date,
-            product_price, total_price, product_name
+            product_price, total_price, product_name,username
         ) values (
             p_id, u_id, CURDATE(), qnt, DATE_ADD(CURDATE(), INTERVAL 7 DAY),
-            p_price, t_price, p_name
+            p_price, t_price, p_name, u_name
         );
 
         
@@ -548,4 +554,7 @@ select * from cart where user_id=12;
 
 select * from byte_pay where user_id=12;
 
-call placing_order_using_byte_pay(12,11,18,"Portable SSD 1TB             ",529133436,2,6499.00,12998.00);
+call placing_order_using_byte_pay(12,11,18,"Portable SSD 1TB             ",529133436,1,299,299.00);
+
+alter table product_purchased add column username varchar(50);
+select * from product_purchased;
